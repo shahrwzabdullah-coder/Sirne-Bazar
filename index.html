@@ -145,8 +145,8 @@ header{background:rgba(255,255,255,.88);color:#17214a;border-bottom:4px solid #f
    Replace these two values with your Supabase Project URL and
    Publishable/Anon key from: Supabase Dashboard -> Project Settings -> API.
 */
-const SUPABASE_URL = "https://vwsghysynuclwmhmnafh.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_hOPrAKFJbykIO-SOzRg9yw_RizpN3Z0";
+const SUPABASE_URL = "https://egfiekwvfahjkpktewxf.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_h6mVRI7Qu11lIhazi82n4A_AWV70pWy";
 const supabaseConfigured = SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR_") && !SUPABASE_ANON_KEY.includes("YOUR_");
 const supabaseClient = supabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
@@ -566,7 +566,7 @@ var en=cl(g("f0")),ar=cl(g("f1")),ck=cl(g("f2")),pr=parseFloat(g("fp")),fb=en||a
 if(!fb){$("f0").focus();return}if(!(pr>0)){$("fp").focus();return}
 var old=editing?pf(editing):null,nid=editing||P.reduce(function(m,y){return Math.max(m,y.id)},0)+1;
 var np={id:nid,c:$("fc").value,n:[en||fb,ar||fb,ck||fb],p:pr,e:(old&&old.e&&String(old.e).indexOf("data:")!==0)?old.e:"📦",img:imageData||((old&&old.img)||""),condition:cond,status:pst,bg:old?old.bg:BG[nid%BG.length],s:[]};
-var po=parseFloat(g("fo"));if(po>pr)np.o=po;var kk=parseInt(g("fk"),10);np.k=kk>=0?kk:20;var cc=parseFloat(g("fcst"));np.cost=cc>=0?cc:0;
+var po=parseFloat(g("fo"));if(po>pr)np.o=po;np.k=pst==="sold"?0:1;var cc=parseFloat(g("fcst"));np.cost=cc>=0?cc:0;
 if(old)P=P.map(function(y){return y.id===nid?np:y});else P.push(np);
 D.products=P;editing=null;save();drawAdmin();drawGrid()}
 else if(b.id==="psave"){var nn=$("pn").value.trim();if(nn)D.user.name=nn;if(!DL.ph.trim()){$("acctPanel").querySelector("#dph").focus();return}saveProf();drawAcctBtn();drawAcct();$("acctPanel").querySelector("#dmsg").textContent=t().saved}
