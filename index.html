@@ -49,6 +49,15 @@ header p{margin:6px 0 14px;font-size:18px}
 .sheet.open{display:flex}
 .panel{background:var(--bg);width:100%;max-width:520px;max-height:88%;overflow:auto;border-radius:20px 20px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px))}
 .panel h2{font:400 24px var(--head);margin:14px 0 4px}
+.account-box{border:1px solid var(--line);border-radius:16px;padding:16px;margin:18px 0;background:var(--card)}
+.account-box h3{margin:0 0 10px;font-size:18px}
+.account-box .field{margin-top:12px}
+.account-actions{display:grid;gap:12px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.logout-note{color:var(--muted);font-size:14px;line-height:1.5;margin:0}
+#logout{margin-top:4px;border-color:#a52a2a;color:#8b1e1e}
+.deal>.primary,.deal>.ghost{margin-top:12px}
+.af{gap:14px}
+
 .sizes{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
 .size{min-width:52px;border:2px solid var(--ink);background:transparent;border-radius:10px;padding:8px 12px;font-weight:600}
 .size[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--on-red)}
@@ -145,8 +154,8 @@ header{background:rgba(255,255,255,.88);color:#17214a;border-bottom:4px solid #f
    Replace these two values with your Supabase Project URL and
    Publishable/Anon key from: Supabase Dashboard -> Project Settings -> API.
 */
-const SUPABASE_URL = "https://egfiekwvfahjkpktewxf.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_h6mVRI7Qu11lIhazi82n4A_AWV70pWy";
+const SUPABASE_URL = "https://vwsghysynuclwmhmnafh.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_hOPrAKFJbykIO-SOzRg9yw_RizpN3Z0";
 const supabaseConfigured = SUPABASE_URL.startsWith("https://") && !SUPABASE_URL.includes("YOUR_") && !SUPABASE_ANON_KEY.includes("YOUR_");
 const supabaseClient = supabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
@@ -270,7 +279,7 @@ return '<h2>'+(up?t().sup:t().signin)+'</h2><div class="tabs"><button class="chi
 (up?'<label class="field">'+t().ph+'<input id="uph" type="tel" autocomplete="tel" value="'+esc(AD.uph)+'"></label><button class="chip" id="openMap" style="margin:4px 0 8px">'+t().mapb+'</button>'+(DL.city?'<p><b>📍 '+esc(DL.city)+'</b></p>':'')+'':'')+
 '<label class="field">'+t().pw+'<input id="upw" type="password" autocomplete="'+(up?'new-password':'current-password')+'" value="'+esc(AD.upw)+'"></label>'+
 (up?'<label><input type="checkbox" id="agree"> '+t().agree+'</label> <button class="ghost" data-terms="1" style="padding:0">'+t().terms+'</button>':'')+
-'<p class="note" id="emsg"></p><button class="primary" id="login">'+(up?t().sup:t().signin)+'</button><p class="note">'+t().demoLogin+'</p>'}
+'<p class="note" id="emsg"></p><button class="primary" id="login">'+(up?t().sup:t().signin)+'</button><p class="note">Secure account access is provided by Supabase. Your session stays signed in on this device until you log out.</p>'}
 async function ensureProfile(user, fallback){
   if(!supabaseClient || !user) return null;
   var profile={id:user.id,name:(fallback&&fallback.name)||user.user_metadata?.name||user.email?.split("@")[0]||user.user_metadata?.phone||"",email:idOf(user),ph:(fallback&&fallback.ph)||"",city:(fallback&&fallback.city)||"",addr:(fallback&&fallback.addr)||"",pm:(fallback&&fallback.pm)||"cod",gid:(fallback&&fallback.gid)??null,tw:(fallback&&fallback.tw)??null};
@@ -414,10 +423,10 @@ function pf(id){return P.find(function(y){return y.id===id})||{id:id,c:"co",e:"�
 function drawAcct(){var h;
 if(!D.user){h=authForm()}
 else{h='<h2>'+t().hi+' '+esc(D.user.name)+'</h2><div class="tabs"><button class="chip" aria-pressed="'+(tab==="prof")+'" data-t="prof">'+t().prof+'</button><button class="chip" aria-pressed="'+(tab==="favs")+'" data-t="favs">'+t().favs+' ('+D.favs.length+')</button><button class="chip" aria-pressed="'+(tab==="deals")+'" data-t="deals">'+t().deals+' ('+myDeals().length+')</button></div>';
-if(tab==="prof"){h+='<label class="field">'+t().uname+'<input id="pn" value="'+esc(D.user.name)+'"></label>'+dform()+'<button class="primary" id="psave">'+t().psave+'</button><h3 style="margin:22px 0 0">'+t().chpw+'</h3><label class="field">'+t().oldpw+'<input id="opw" type="password" autocomplete="current-password"></label><label class="field">'+t().newpw+'<input id="npw" type="password" autocomplete="new-password"></label><button class="chip" id="cpw">'+t().chpw+'</button><p class="note" id="pmsg"></p><button class="ghost" id="delacc">'+(delAcc?t().delsure:t().delacc)+'</button>'}
+if(tab==="prof"){h+='<div class="account-box"><h3>Profile & delivery details</h3><label class="field">'+t().uname+'<input id="pn" value="'+esc(D.user.name)+'"></label>'+dform()+'<button class="primary" id="psave">'+t().psave+'</button></div><div class="account-box"><h3>'+t().chpw+'</h3><label class="field">'+t().oldpw+'<input id="opw" type="password" autocomplete="current-password"></label><label class="field">'+t().newpw+'<input id="npw" type="password" autocomplete="new-password"></label><button class="chip" id="cpw">'+t().chpw+'</button><p class="note" id="pmsg"></p></div><div class="account-box"><h3>Account management</h3><p class="logout-note">Delete account is a separate account action. Use it only if you want to stop using this account.</p><button class="ghost" id="delacc">'+(delAcc?t().delsure:t().delacc)+'</button></div>'}
 else if(tab==="favs"){h+=D.favs.length?D.favs.map(function(id){var x=pf(id);return '<div class="row"><span class="e">'+x.e+'</span><button class="open" data-id="'+id+'"><b>'+esc(nm(x))+'</b><span>'+money(x.p)+'</span></button><button class="heart" data-f="'+id+'" aria-pressed="true" aria-label="'+t().unfav+'">♥</button></div>'}).join(""):'<p>'+t().nofav+'</p>'}
 else{var md=myDeals();h+=md.length?md.map(function(d){return '<div class="deal"><span class="badge">'+stl(d.st)+'</span> <b>'+t().order+' #'+d.n+'</b><small>'+new Date(d.at).toLocaleDateString(L)+'</small>'+d.items.map(function(i){var x=pf(i.id);return '<div>'+x.e+' '+esc(nm(x))+(i.s!=="-"?' ('+i.s+')':'')+' × '+i.q+'</div>'}).join("")+'<div class="total"><span>'+t().total+'</span><span>'+money(d.total)+'</span></div></div>'}).join(""):'<p>'+t().nodeal+'</p>'}
-h+='<button class="ghost" id="logout">'+t().out+'</button>'}
+h+='<div class="account-actions"><p class="logout-note"><b>Log out</b><br>Signs this device out of Sirne Bazar. Your account and saved profile remain available for your next sign-in.</p><button class="ghost" id="logout">'+t().out+'</button></div>'}
 h+=(D.user?'':'')+'<button class="ghost" id="closeA">'+t().keep+'</button>';
 $("acctPanel").innerHTML=h}
 
@@ -568,7 +577,7 @@ var old=editing?pf(editing):null,nid=editing||P.reduce(function(m,y){return Math
 var np={id:nid,c:$("fc").value,n:[en||fb,ar||fb,ck||fb],p:pr,e:(old&&old.e&&String(old.e).indexOf("data:")!==0)?old.e:"📦",img:imageData||((old&&old.img)||""),condition:cond,status:pst,bg:old?old.bg:BG[nid%BG.length],s:[]};
 var po=parseFloat(g("fo"));if(po>pr)np.o=po;np.k=pst==="sold"?0:1;var cc=parseFloat(g("fcst"));np.cost=cc>=0?cc:0;
 if(old)P=P.map(function(y){return y.id===nid?np:y});else P.push(np);
-D.products=P;editing=null;save();drawAdmin();drawGrid()}
+D.products=P;editing=null;save();drawAdmin();drawGrid();setTimeout(function(){alert("Product saved successfully.")},20)}
 else if(b.id==="psave"){var nn=$("pn").value.trim();if(nn)D.user.name=nn;if(!DL.ph.trim()){$("acctPanel").querySelector("#dph").focus();return}saveProf();drawAcctBtn();drawAcct();$("acctPanel").querySelector("#dmsg").textContent=t().saved}
 else if(b.id==="openMap"){mapBack=$("acctSheet").classList.contains("open")?"a":"c";$("acctSheet").classList.remove("open");mapSel=DL.gid==null?-1:DL.gid;mapTw=DL.tw==null?-1:DL.tw;$("cartSheet").classList.remove("open");drawMap();$("mapSheet").classList.add("open")}
 else if(b.dataset.g){mapSel=+b.dataset.g;mapTw=-1;drawMap()}
