@@ -161,7 +161,7 @@ const supabaseClient = supabaseConfigured ? window.supabase.createClient(SUPABAS
 
 var T={
 en:{dir:"ltr",brand:"Sirne Bazar",tag:"Shop in your Mobile",all:"All",search:"Search products",add:"Add to cart",pick:"Pick a size",cart:"Cart",your:"Your cart",empty:"Your cart is empty. Pick something to start.",total:"Total",pay:"Check out",note:"Demo only. A real store would send this to Stripe Checkout so card details never touch your app.",keep:"Keep browsing",size:"Size",done:"Order placed",doneMsg:"This is a demo, so nothing was charged.",back:"Back to the shop",none:"Nothing matches your search. Try another word.",off:"off",rm:"Remove one",ad:"Add one",
-signin:"Sign in",uname:"Your name",email:"Email",favs:"Favorites",deals:"Done deals",out:"Sign out",nofav:"No favorites yet. Tap the heart on a product to save it.",nodeal:"No done deals yet. Your completed orders will show here.",need:"Sign in to check out.",demoLogin:"Demo sign-in: your details stay in this browser only. A real app would use secure accounts, for example Supabase Auth.",order:"Order",hi:"Hello",fav:"Save to favorites",unfav:"Remove from favorites",paid:"Done",
+signin:"Sign in",uname:"Your name",email:"Email",favs:"Favorites",deals:"Done deals",out:"Sign out",nofav:"No favorites yet. Tap the heart on a product to save it.",nodeal:"No done deals yet. Your completed orders will show here.",need:"Sign in to check out.",demoLogin:"Sign in securely with your Sirne Bazar account. Your account is connected through Supabase.",order:"Order",hi:"Hello",fav:"Save to favorites",unfav:"Remove from favorites",paid:"Done",
 admin:"Admin",apass:"Passcode",aenter:"Enter",awrong:"Wrong passcode.",aprod:"Products",aord:"Orders",anew:"Add product",aedit:"Edit",adel:"Delete",asave:"Save product",acancel:"Cancel",nen:"Name (English)",nar:"Name (Arabic)",nck:"Name (Kurdish)",acat:"Category",apr:"Price (USD)",aold:"Old price (optional)",aem:"Emoji",asz:"Sizes, separated by commas (leave empty if none)",arev:"Total sales",anoord:"No orders yet.",acust:"Customer",aback:"Back to shop",asure:"Tap again to delete",
 sold:"Sold out",stockl:"Stock (units)",ph:"Phone number",city:"City",addr:"Address",pm:"Payment",cod:"Cash on delivery",card:"Card (demo)",req:"Please fill in phone, city and address.",stN:"New",stS:"Shipped",stD:"Delivered",stC:"Cancelled",
 maph:"Choose your place on the map",mapb:"📍 Choose on map",mapok:"Confirm place",mapn:"Simplified map of Iraq. Tap your governorate, then your town (optional).",
@@ -287,6 +287,28 @@ async function ensureProfile(user, fallback){
   if(r.error){console.warn("Supabase profile upsert failed:",r.error);return null}
   return r.data;
 }
+
+async function loadSupabaseProducts(){
+  if(!supabaseClient)return;
+  var r=await supabaseClient.from("products").select("*").order("created_at",{ascending:false});
+  if(r.error){console.warn("Products load failed:",r.error);return}
+  P=(r.data||[]).map(function(row){
+    var meta={};try{meta=row.description?JSON.parse(row.description):{}}catch(e){}
+    return {id:Number(row.id),seller_id:row.seller_id,c:row.category||"ho",n:Array.isArray(meta.n)?meta.n:[row.name,row.name,row.name],p:Number(row.price)||0,o:row.old_price==null?undefined:Number(row.old_price),cost:row.cost_price==null?0:Number(row.cost_price),e:meta.e||"📦",img:row.image_url||"",condition:row.condition||"New",status:row.status||"available",bg:meta.bg||BG[Number(row.id)%BG.length],s:Array.isArray(meta.s)?meta.s:[],k:(row.status==="sold"?0:1)};
+  });
+  D.products=P;save();drawGrid();if(admOK)drawAdmin();
+}
+async function saveSupabaseProduct(np,isEdit){
+  if(!supabaseClient||!D.user||!D.user.id)throw new Error("Please sign in before saving a product.");
+  var payload={seller_id:D.user.id,name:np.n[0]||np.n[1]||np.n[2]||"Product",description:JSON.stringify({n:np.n,e:np.e,bg:np.bg,s:np.s||[]}),category:np.c||"",price:np.p,old_price:np.o==null?null:np.o,cost_price:np.cost||0,condition:np.condition||"New",status:np.status||"available",image_url:np.img||"",updated_at:new Date().toISOString()};
+  var r=isEdit?await supabaseClient.from("products").update(payload).eq("id",np.id).select().single():await supabaseClient.from("products").insert(payload).select().single();
+  if(r.error)throw r.error;return r.data;
+}
+async function deleteSupabaseProduct(id){
+  if(!supabaseClient)throw new Error("Database is not connected.");
+  var r=await supabaseClient.from("products").delete().eq("id",id);if(r.error)throw r.error;
+}
+
 async function loadSupabaseUser(){
   if(!supabaseClient) return;
   var r=await supabaseClient.auth.getUser();
@@ -576,15 +598,14 @@ if(!fb){$("f0").focus();return}if(!(pr>0)){$("fp").focus();return}
 var old=editing?pf(editing):null,nid=editing||P.reduce(function(m,y){return Math.max(m,y.id)},0)+1;
 var np={id:nid,c:$("fc").value,n:[en||fb,ar||fb,ck||fb],p:pr,e:(old&&old.e&&String(old.e).indexOf("data:")!==0)?old.e:"📦",img:imageData||((old&&old.img)||""),condition:cond,status:pst,bg:old?old.bg:BG[nid%BG.length],s:[]};
 var po=parseFloat(g("fo"));if(po>pr)np.o=po;np.k=pst==="sold"?0:1;var cc=parseFloat(g("fcst"));np.cost=cc>=0?cc:0;
-if(old)P=P.map(function(y){return y.id===nid?np:y});else P.push(np);
-D.products=P;editing=null;save();drawAdmin();drawGrid();setTimeout(function(){alert("Product saved successfully.")},20)}
+try{var savedRow=await saveSupabaseProduct(np,!!old);np.id=Number(savedRow.id);np.seller_id=savedRow.seller_id;if(old)P=P.map(function(y){return y.id===nid?np:y});else P.unshift(np);D.products=P;editing=null;save();drawAdmin();drawGrid();setTimeout(function(){alert("Product saved successfully. Everyone can now see it.")},20)}catch(err){console.error(err);alert("Could not save product: "+(err.message||err))}}
 else if(b.id==="psave"){var nn=$("pn").value.trim();if(nn)D.user.name=nn;if(!DL.ph.trim()){$("acctPanel").querySelector("#dph").focus();return}saveProf();drawAcctBtn();drawAcct();$("acctPanel").querySelector("#dmsg").textContent=t().saved}
 else if(b.id==="openMap"){mapBack=$("acctSheet").classList.contains("open")?"a":"c";$("acctSheet").classList.remove("open");mapSel=DL.gid==null?-1:DL.gid;mapTw=DL.tw==null?-1:DL.tw;$("cartSheet").classList.remove("open");drawMap();$("mapSheet").classList.add("open")}
 else if(b.dataset.g){mapSel=+b.dataset.g;mapTw=-1;drawMap()}
 else if(b.dataset.w){mapTw=+b.dataset.w;mapSel=TW[mapTw][5];drawMap()}
 else if(b.id==="mapok"){DL.gid=mapSel;DL.tw=mapTw;DL.city=mapTw>=0?tn(mapTw)+", "+gn(mapSel):gn(mapSel);backMap()}
 else if(b.id==="closeMap")backMap();
-else if(b.dataset.ad){var did=+b.dataset.ad;if(delId!==did){delId=did;drawAdmin();return}P=P.filter(function(y){return y.id!==did});D.products=P;delId=null;save();drawAdmin();drawGrid()}
+else if(b.dataset.ad){var did=+b.dataset.ad;if(delId!==did){delId=did;drawAdmin();return}try{await deleteSupabaseProduct(did);P=P.filter(function(y){return y.id!==did});D.products=P;delId=null;save();drawAdmin();drawGrid()}catch(err){console.error(err);alert("Could not delete product: "+(err.message||err))}}
 else if(b.dataset.s){size=b.dataset.s;drawProd()}
 else if(b.id==="add"){if(stk(pick)<1)return;var f=cart.find(function(i){return i.id===pick.id});if(!f)cart.push({id:pick.id,e:pick.e,p:pick.p,s:"-",q:1});$("prodSheet").classList.remove("open");drawBtn()}
 else if(b.id==="closeP")$("prodSheet").classList.remove("open");
@@ -599,7 +620,7 @@ document.querySelectorAll(".sheet").forEach(function(s){s.addEventListener("clic
 document.addEventListener("keydown",function(e){if(e.key==="Escape")document.querySelectorAll(".sheet").forEach(function(s){s.classList.remove("open")})});
 var saved="en";try{saved=localStorage.getItem("bz-lang")||"en"}catch(e){}
 setLang(T[saved]?saved:"en");
-if(supabaseClient){finishSupabaseAuth().finally(function(){loadSupabaseUser();loadCats();drawAcctBtn()})}
+if(supabaseClient){finishSupabaseAuth().finally(function(){loadSupabaseUser();loadCats();loadSupabaseProducts();drawAcctBtn()})}
 if(!D.user&&!D.seen){D.seen=1;save();authMode="up";openAcct()}
 </script>
 </body>
