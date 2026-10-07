@@ -155,6 +155,157 @@ header{background:rgba(255,255,255,.88);color:#17214a;border-bottom:4px solid #f
 .dashboard-nav button[aria-pressed="true"]{border:2px solid var(--ink);background:#fff7d8}
 @media(max-width:420px){.product-gallery{height:320px}.card .art{height:170px}}
 
+
+/* Final Sirne Bazar visual corrections */
+:root{
+  --bg:#F3F4F6;
+  --card:#FFFFFF;
+  --line:#D9DEE7;
+}
+body{
+  background:#F3F4F6 !important;
+  color:var(--ink);
+}
+body::before{
+  background:none !important;
+}
+header{
+  background:#FFFFFF !important;
+  color:var(--ink) !important;
+  border-bottom:4px solid var(--gold) !important;
+}
+.lang button,.acct{
+  border-color:var(--ink) !important;
+  color:var(--ink) !important;
+}
+.lang button[aria-pressed="true"]{
+  background:var(--gold) !important;
+  color:var(--ink) !important;
+  border-color:var(--gold) !important;
+}
+
+/* Product cards: show the complete original photo, never crop it */
+.card .art{
+  width:100%;
+  height:auto !important;
+  min-height:0 !important;
+  display:block !important;
+  background:#FFFFFF !important;
+  overflow:visible !important;
+}
+.card .art img{
+  display:block;
+  width:100% !important;
+  height:auto !important;
+  max-height:none !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  background:#FFFFFF;
+}
+.card .info{
+  background:#FFFFFF;
+  padding:14px 14px 16px;
+}
+.card .info b{
+  font-size:18px;
+  line-height:1.25;
+}
+.card .price{
+  font-size:19px;
+  margin-top:7px;
+}
+
+/* Product details: full image inside a large swipe gallery */
+.product-gallery{
+  width:100%;
+  height:min(68vh,520px) !important;
+  display:flex;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  border-radius:18px;
+  background:#FFFFFF;
+  -webkit-overflow-scrolling:touch;
+}
+.product-slide{
+  min-width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+  scroll-snap-align:center;
+  background:#FFFFFF;
+}
+.product-slide img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  background:#FFFFFF;
+}
+
+/* Dashboard shown directly below the shop products */
+.home-dashboard{
+  max-width:1000px;
+  margin:0 auto 120px;
+  padding:0 20px;
+}
+.home-dashboard-card{
+  background:#FFFFFF;
+  border:2px solid var(--ink);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 8px 24px rgba(23,33,74,.08);
+}
+.home-dashboard-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.home-dashboard-head h2{
+  margin:0;
+  font-size:24px;
+}
+.home-dashboard-head p{
+  margin:0;
+  color:var(--muted);
+  font-size:14px;
+}
+.home-dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.home-dashboard-grid button{
+  min-height:64px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#F9FAFB;
+  color:var(--ink);
+  padding:12px;
+  text-align:start;
+  font-weight:700;
+}
+.home-dashboard-grid button:active{
+  transform:translateY(1px);
+}
+.home-dashboard-grid .wide{
+  grid-column:1/-1;
+}
+.home-dashboard-signin{
+  width:100%;
+  border:2px solid var(--ink);
+  border-radius:14px;
+  background:var(--gold);
+  padding:13px 16px;
+  font-weight:700;
+}
+@media(max-width:430px){
+  .home-dashboard-grid{grid-template-columns:1fr 1fr}
+  .product-gallery{height:min(62vh,440px)!important}
+}
+
 </style>
 </head>
 <body>
@@ -165,6 +316,7 @@ header{background:rgba(255,255,255,.88);color:#17214a;border-bottom:4px solid #f
 </div></header>
 <div class="bar" id="filters" role="group"></div>
 <main class="grid" id="grid"></main>
+<section class="home-dashboard" id="homeDashboard" aria-label="Dashboard"></section>
 <footer class="foot"><button class="ghost" id="helpBtn"></button><button class="ghost" id="adminBtn" style="display:none"></button></footer>
 <button class="cart-btn" id="cartBtn"></button>
 <div class="sheet" id="prodSheet"><div class="panel" id="prodPanel" role="dialog" aria-modal="true"></div></div>
@@ -559,10 +711,26 @@ async function resendConfirmation(){
   }catch(err){if(msg)msg.textContent=err.message||"Could not resend the confirmation email."}
 }
 function stk(x){return x.status==='sold'||x.k===0?0:1}
+
+function drawHomeDashboard(){
+  var el=$("homeDashboard");if(!el)return;
+  if(!D.user){
+    el.innerHTML='<div class="home-dashboard-card"><div class="home-dashboard-head"><div><h2>Dashboard</h2><p>Sign in to manage your Sirne Bazar account.</p></div></div><button class="home-dashboard-signin" id="homeSignIn">Sign in</button></div>';
+    return;
+  }
+  var mine=P.filter(function(x){return x.seller_id===D.user.id}).length;
+  el.innerHTML='<div class="home-dashboard-card"><div class="home-dashboard-head"><div><h2>Dashboard</h2><p>'+esc(D.user.name)+'</p></div></div><div class="home-dashboard-grid">'
+    +'<button data-hometab="mine">My Products<br><small>'+mine+' published</small></button>'
+    +'<button data-hometab="favs">Favorites<br><small>'+D.favs.length+' saved</small></button>'
+    +'<button data-hometab="deals">Done Deals<br><small>'+myDeals().length+' deals</small></button>'
+    +'<button id="homeHelp">Help Center<br><small>Support & requests</small></button>'
+    +'<button class="wide" data-hometab="prof">Profile & Settings<br><small>Personal details, delivery, password and log out</small></button>'
+    +'</div></div>';
+}
 function productImages(x){var a=Array.isArray(x.imgs)?x.imgs.filter(Boolean):[];if(!a.length&&x.img)a=[x.img];return a}
 function productImage(x){return productImages(x)[0]||((typeof x.e==='string'&&x.e.indexOf('data:image/')===0)?x.e:'')}
 function productVisual(x,cls){var im=productImage(x);return im?'<img class="'+(cls||'')+'" src="'+im+'" alt="'+esc(nm(x))+'">':(x.e||'📦')}
-function drawGrid(){var q=term.trim().toLowerCase();var list=P.filter(function(x){return(cur==='all'||x.c===cur)&&(!q||x.n.join(' ').toLowerCase().indexOf(q)>-1)});$("grid").innerHTML=list.length?list.map(function(x){var pc=x.o?Math.round((1-x.p/x.o)*100):0,fv=D.favs.indexOf(x.id)>-1;return '<div class="card"><button class="open" data-id="'+x.id+'">'+(pc?'<span class="tag">'+pc+'% '+t().off+'</span>':'')+'<div class="art">'+productVisual(x)+'</div><div class="info"><b>'+esc(nm(x))+'</b>'+(stk(x)<1?'<span class="badge">'+t().sold+'</span>':'')+'<div class="price">'+money(x.p)+(x.o?'<s>'+money(x.o)+'</s>':'')+'</div></div></button><button class="heart" data-f="'+x.id+'" aria-pressed="'+fv+'" aria-label="'+(fv?t().unfav:t().fav)+'">'+(fv?'♥':'♡')+'</button></div>'}).join(''):'<p class="empty">'+t().none+'</p>'}
+function drawGrid(){var q=term.trim().toLowerCase();var list=P.filter(function(x){return(cur==='all'||x.c===cur)&&(!q||x.n.join(' ').toLowerCase().indexOf(q)>-1)});$("grid").innerHTML=list.length?list.map(function(x){var pc=x.o?Math.round((1-x.p/x.o)*100):0,fv=D.favs.indexOf(x.id)>-1;return '<div class="card"><button class="open" data-id="'+x.id+'">'+(pc?'<span class="tag">'+pc+'% '+t().off+'</span>':'')+'<div class="art">'+productVisual(x)+'</div><div class="info"><b>'+esc(nm(x))+'</b>'+(stk(x)<1?'<span class="badge">'+t().sold+'</span>':'')+'<div class="price">'+money(x.p)+(x.o?'<s>'+money(x.o)+'</s>':'')+'</div></div></button><button class="heart" data-f="'+x.id+'" aria-pressed="'+fv+'" aria-label="'+(fv?t().unfav:t().fav)+'">'+(fv?'♥':'♡')+'</button></div>'}).join(''):'<p class="empty">'+t().none+'</p>';drawHomeDashboard()}
 function drawProd(){var x=pick,ok=stk(x)>0,imgs=productImages(x),pc=x.o?Math.round((1-x.p/x.o)*100):0;
 var gallery=imgs.length?'<div class="product-gallery" id="productGallery">'+imgs.map(function(im,i){return '<div class="product-slide"><img src="'+im+'" alt="'+esc(nm(x))+' photo '+(i+1)+'"></div>'}).join('')+'</div>'+(imgs.length>1?'<div class="gallery-dots">'+imgs.map(function(_,i){return '<button class="gallery-dot'+(i===0?' active':'')+'" data-goto="'+i+'" aria-label="Photo '+(i+1)+'"></button>'}).join('')+'</div>':''):'<div class="art" style="height:220px">'+(x.e||'📦')+'</div>';
 $("prodPanel").innerHTML=gallery+'<h2>'+esc(nm(x))+'</h2><div class="price">'+money(x.p)+(x.o?'<s>'+money(x.o)+'</s>':'')+'</div><div class="product-meta">'+(pc?'<span class="badge">'+pc+'% off</span>':'')+'<span class="badge">Condition: '+esc((x.condition||'New').replaceAll('_',' '))+'</span><span class="badge">'+(x.status==='sold'?'Sold':'Available')+'</span><span class="badge">'+esc((t().cats&&t().cats[x.c])||x.c||'')+'</span></div><div class="product-detail-block"><h3>Description</h3><p>'+(x.desc?esc(x.desc):'No description provided.')+'</p></div><button class="primary" id="add"'+(ok?'':' disabled')+'>'+(ok?t().add:t().sold)+'</button><button class="ghost" id="closeP">'+t().keep+'</button>';
@@ -597,7 +765,9 @@ if(b.dataset.l)setLang(b.dataset.l);
 else if(b.dataset.c){cur=b.dataset.c;drawFilters();drawGrid()}
 else if(b.classList.contains("open")){$("acctSheet").classList.remove("open");openProd(+b.dataset.id)}
 else if(b.dataset.f){var fid=+b.dataset.f;if(!D.user){goPay=false;openAcct();return}var ix=D.favs.indexOf(fid);if(ix>-1)D.favs.splice(ix,1);else D.favs.push(fid);save();drawGrid();if($("acctSheet").classList.contains("open"))drawAcct()}
+else if(b.dataset.hometab){tab=b.dataset.hometab;delAcc=false;drawAcct();$("acctSheet").classList.add("open")}
 else if(b.dataset.t){tab=b.dataset.t;delAcc=false;drawAcct()}
+else if(b.id==="homeSignIn"){goPay=false;authMode="in";openAcct()}
 else if(b.id==="acctBtn")openAcct();
 else if(b.id==="closeA")$("acctSheet").classList.remove("open");
 else if(b.id==="login")doAuth();
@@ -607,9 +777,9 @@ else if(b.dataset.m){authMode=b.dataset.m;drawAcct()}
 else if(b.dataset.terms){$("acctPanel").innerHTML='<h2>'+t().terms+'</h2><p>'+t().termsText+'</p><button class="primary" data-m="up">'+t().tback+'</button>'}
 else if(b.id==="cpw")changePw();
 else if(b.id==="delacc"){if(!delAcc){delAcc=true;drawAcct();return}delAcc=false;removeAcct()}
-else if(b.id==="logout"){if(supabaseClient) await supabaseClient.auth.signOut();D.user=null;D.favs=[];drawGrid();DL.ph=DL.city=DL.addr="";DL.pm="cod";DL.gid=DL.tw=null;save();drawAcctBtn();drawAcct()}
+else if(b.id==="logout"){if(supabaseClient) await supabaseClient.auth.signOut();D.user=null;D.favs=[];drawGrid();drawHomeDashboard();DL.ph=DL.city=DL.addr="";DL.pm="cod";DL.gid=DL.tw=null;save();drawAcctBtn();drawAcct()}
 else if(b.id==="adminBtn")openAdmin();
-else if(b.id==="helpBtn"||b.id==="dashHelp"){$("acctSheet").classList.remove("open");openHelp()}
+else if(b.id==="helpBtn"||b.id==="dashHelp"||b.id==="homeHelp"){$("acctSheet").classList.remove("open");openHelp()}
 else if(b.id==="cadd"||b.dataset.csave||b.dataset.cup||b.dataset.cdn||b.dataset.cdel)catAction(b);
 else if(b.id==="telegramBtn")window.open(TELEGRAM_URL,"_blank","noopener");
 else if(b.id==="resendConfirm")resendConfirmation();
