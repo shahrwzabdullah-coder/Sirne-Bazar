@@ -319,7 +319,7 @@ header{
   width:min(680px,calc(100% - 18px));
   z-index:80;
   display:grid;
-  grid-template-columns:repeat(5,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:2px;
   padding:9px 7px 8px;
   background:rgba(255,255,255,.97);
@@ -428,6 +428,32 @@ body{padding-bottom:100px!important}
 }
 .product-slide img{cursor:zoom-in}
 
+
+/* Compact language controls */
+.lang{
+  gap:6px !important;
+  flex-wrap:wrap;
+}
+.lang button{
+  width:auto !important;
+  min-width:0 !important;
+  min-height:32px !important;
+  padding:5px 10px !important;
+  border-width:1.5px !important;
+  border-radius:999px !important;
+  font-size:13px !important;
+  line-height:1 !important;
+  font-weight:700 !important;
+}
+@media(max-width:430px){
+  .lang{gap:5px !important}
+  .lang button{
+    min-height:30px !important;
+    padding:4px 9px !important;
+    font-size:12px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -444,10 +470,6 @@ body{padding-bottom:100px!important}
   <button id="navHome" class="active" aria-label="Home">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg>
     <small>Home</small>
-  </button>
-  <button id="navMine" aria-label="My Products">
-    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16v13H4z"/><path d="M8 7V4h8v3"/><path d="M4 12h16"/></svg>
-    <small>Products</small>
   </button>
   <button id="navFavs" aria-label="Favorites">
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
@@ -879,7 +901,7 @@ function drawHomeDashboard(){
 }
 
 function setBottomNav(which){
-  var ids={home:"navHome",mine:"navMine",favs:"navFavs",deals:"navDeals",profile:"navProfile"};
+  var ids={home:"navHome",favs:"navFavs",deals:"navDeals",profile:"navProfile"};
   Object.keys(ids).forEach(function(k){var el=$(ids[k]);if(el)el.classList.toggle("active",k===which)});
 }
 function closeMainSheets(){
@@ -957,7 +979,6 @@ if(full){openPhotoLightbox(+full.dataset.fullphoto);return}
 if(e.target.id==="photoLightbox"||e.target.id==="photoLightboxClose"){closePhotoLightbox();return}
 var b=e.target.closest("button");if(!b)return;
 if(b.id==="navHome"){openBottomTab("home")}
-else if(b.id==="navMine"){openBottomTab("mine")}
 else if(b.id==="navFavs"){openBottomTab("favs")}
 else if(b.id==="navDeals"){openBottomTab("deals")}
 else if(b.id==="navProfile"){openBottomTab("profile")}
